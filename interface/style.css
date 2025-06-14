@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+:root{
+  --cor: #8629FE;
+  --cor-cinza: #2E3138;
+  --cor-erro: #ff707025;
+  --tamanho: 100px;
+  
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Rubik", sans-serif;
+}
+
+
+body{
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(45deg, #e3e3e4, #e3e3e4);
+}
+
+table {
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 8px 12px;
+}
+
+
+#barra-progresso {
+  transition: width 0.3s ease-in-out;
+}
+
+
+.capa{
+  width: 60%;
+  height: 100%;
+  border-radius: 0px 20px 20px 0px;
+  background-image: url("assets/capa.jpeg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#login, #cadastro, #homepage{
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+#homepage{
+  flex-direction: column;
+}
+
+.login-container{
+  width: 40%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 35px 50px;
+}
+
+.efeito{
+  position: absolute;
+  bottom: 0px;
+  width: 500px;
+  right: 0px;
+  transform: translate( 50%, 50%) rotate(53deg);
+  z-index: -1;
+  animation: efeitoRotate 20s infinite linear;
+}
+
+@keyframes efeitoRotate {
+  0%{
+    transform: translate( 50%, 50%) rotate(53deg);
+  }
+  50%{
+    transform: translate( 50%, 50%) rotate(20deg);
+  }
+
+  100%{
+    transform: translate( 50%, 50%) rotate(53deg);
+  }
+}
+
+
+.footer-login{
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  & span{
+    font-size: 11px;
+    color: var(--cor-cinza);
+  }
+}
+
+.footer-login div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-login div img{
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.footer-login div a{
+  color: var(--cor);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.login-header{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-login{
+  width: 100%;
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+
+  & h1{
+    font-size: 17px;
+    color: var(--cor-cinza);
+  }
+}
+
+.logotipo{
+  width: 150px;
+}
+
+#button-login{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  color: white;
+  background-color: var(--cor);
+  border-radius: 5px;
+  padding: 18px 7px;
+  border: none;
+  outline: none;
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+
+/* INPUT LOGIN */
+.input-login{
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  & label{
+    font-size: 10px;
+    color: var(--cor-cinza);
+  }
+
+  & input{
+    width: 100%;
+    background: #cacaca27;
+    border-radius: 5px;
+    border: none;
+    font-size: 12px;
+    outline: none;
+    padding: 8px 12px;
+  }
+}
+
+.input{
+  width: 100%;
+}
+
+.spinner-border {
+  width: 15px;
+  height: 15px;
+  border: 2px solid white;
+  border-top: 2px solid transparent; /* Parte que ficará "vazia" para o efeito girar */
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.msg-erro{
+  width: 100%;
+  color: #a53434;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #ff31313d;
+  background: var(--cor-erro);
+  font-size: 12px;
+}
+
+
+#qrCanvas{
+  width: 100% !important;
+  height: auto !important;
+}
+
+#loading-cadastro, #loading-homepage{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#onloading-cadastro, #onloading-homepage{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+#onloading-homepage{
+  flex-direction: column;
+}
+
+
+
+.loagind-css {
+    user-select: none !important;
+    width: 100px;
+    height: 100px;
+    position: relative;
+    width: var(--tamanho);
+    height: var(--tamanho);
+}
+
+.loagind-css img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.loagind-css .icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--tamanho) / 5.5 ) !important;
+    animation: pulso 2s linear infinite;
+}
+
+.loagind-css .rotate {
+    animation: spin 2s linear infinite; /* Animação */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg); /* Começa com 0 graus */
+  }
+  100% {
+    transform: rotate(360deg); /* Gira até 360 graus */
+  }
+}
+
+@keyframes pulso {
+  0%{
+    transform: translate(-50%, -50%) scale(1);
+  }
+  
+  50%{
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  
+  100%{
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

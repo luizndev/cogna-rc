@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robô Comunicação - Cogna Educação</title>
+  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login">
+    <img src="assets/efeito.svg" alt="" class="efeito">
+    <div class="capa"></div>
+    <div class="login-container">
+      <div class="login-header">
+        <img src="assets/logotipo.png" alt="" class="logotipo">
+        <div class="form-login">
+          <h1>ROBÔ DE COMUNICAÇÃO</h1>
+          <div class="msg-erro" id="msg-erro" style="display: none;">
+            <p id="msg-text"></p>
+          </div>
+          <div class="input-login">
+            <label for="">Login</label>
+            <input type="email" name="email" id="email-login" placeholder="Digite seu email">
+          </div>
+          <div class="input-login">
+            <label for="">Senha</label>
+            <div class="input">
+              <input type="password" name="senha" id="senha-login" placeholder="Digite sua senha">
+            </div>
+          </div>
+          <button id="button-login">Fazer Login</button>
+        </div>
+      </div>
+      <div class="footer-login">
+        <div>
+          <img src="assets/githubicon.jfif" alt="">
+          <a href="https://github.com/luizndev">@luizndev</a>
+        </div>
+        <span>© Cogna Educação 2025</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="cadastro" style="display: none;">
+      <div id="loading-cadastro">
+        <div class='loagind-css'>
+          <img class='rotate' src="assets/loading.svg" alt="" />
+          <img class='icon' src="assets/favicon.svg" alt="" />
+        </div>
+      </div>
+      <div id="onloading-cadastro" style="display: none;">
+        <img src="assets/efeito.svg" alt="" class="efeito">
+        <div class="capa"></div>
+        <div class="login-container">
+          <div class="login-header">
+            <img src="assets/logotipo.png" alt="" class="logotipo">
+            <div class="form-login">
+              <h1>ESCANEIE PARA ACESSAR!</h1>
+              <canvas id="qrCanvas"></canvas>
+          </div>
+        </div>
+        <div class="footer-login">
+          <div>
+            <img src="assets/githubicon.jfif" alt="">
+            <a id="linkProfile">@luizndev</a>
+          </div>
+          <span>© Cogna Educação 2025</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="homepage" style="display: none;">
+    <div id="loading-homepage">
+        <div class='loagind-css'>
+          <img class='rotate' src="assets/loading.svg" alt="" />
+          <img class='icon' src="assets/favicon.svg" alt="" />
+        </div>
+      </div>
+      <div id="onloading-homepage" style="display: none;">
+        <div class="header-home">
+          <img src="assets/logotipo.png" alt="">
+
+          <div class="profile">
+            <div class="profile-info">
+              <h1 id="nomeUsuario"></h1>
+              <p id="numeroUsuario"></p>
+            </div>
+            <img id="fotoUsuario" width="100" />
+          </div>
+        </div>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" />
+        <div id="tabela-container"></div>
+        <textarea name="textarea" id="textarea" cols="30"></textarea>
+        <button id="meuBotao">Clique aqui</button>
+      
+      
+        <div id="progresso-container" style="width: 100%; background: #eee; margin-top: 10px; display: none;">
+        <div id="barra-progresso" style="width: 0%; height: 20px; background-color: #4caf50;"></div>
+        </div>
+        <p id="mensagem-final" style="color: green; font-weight: bold;"></p>
+        <div class="footer-login">
+          <span>© Cogna Educação 2025</span>
+        </div>
+      </div>
+  </div>
+
+
+
+</body>
+<script src="javascript.js"></script>
+</html>

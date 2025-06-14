@@ -1,0 +1,24 @@
+{
+  "557388683102@s.whatsapp.net": {
+    "email": "luizncorporation@gmail.com",
+    "entrada": "2025-05-10",
+    "ultimo_pagamento": "2025-05-10",
+    "vencimento": "2025-06-06",
+    "pagamento_id": "w",
+    "valor_apoio": 0.01,
+    "grupo": "120363418723649976@g.us",
+    "status": "pendente",        
+    "inicio_cobranca": "2025-06-10T10:00:00Z" 
+  },
+  "557391353138@s.whatsapp.net": {
+    "email": "luizncorporation@gmail.com",
+    "entrada": "2025-05-10",
+    "ultimo_pagamento": "2025-05-10",
+    "vencimento": "2025-06-06",
+    "pagamento_id": "w",
+    "valor_apoio": 0.01,
+    "grupo": "120363418723649976@g.us",
+    "status": "pendente",        
+    "inicio_cobranca": "2025-06-10T10:00:00Z" 
+  }
+}
