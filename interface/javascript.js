@@ -1,4 +1,5 @@
 const { ipcRenderer, shell } = require('electron');
+const { sleep } = require('../components/sleep.js')
 const XLSX = require('xlsx');
 const QRCode = require('qrcode');
 let dadosDaPlanilha = [];
@@ -62,27 +63,34 @@ function renderTabela(dados) {
   if (dados.length === 0) return;
 
   const tabela = document.createElement('table');
-  tabela.border = '1';
 
-  // Cabeçalho
-  const cabecalho = tabela.insertRow();
+  // Cria o thead
+  const thead = document.createElement('thead');
+  const cabecalho = document.createElement('tr');
   Object.keys(dados[0]).forEach(coluna => {
     const th = document.createElement('th');
     th.innerText = coluna;
     cabecalho.appendChild(th);
   });
+  thead.appendChild(cabecalho);
+  tabela.appendChild(thead);
 
-  // Linhas
+  // Cria o tbody
+  const tbody = document.createElement('tbody');
   dados.forEach(linha => {
-    const tr = tabela.insertRow();
+    const tr = document.createElement('tr');
     Object.values(linha).forEach(valor => {
-      const td = tr.insertCell();
+      const td = document.createElement('td');
       td.innerText = valor;
+      tr.appendChild(td);
     });
+    tbody.appendChild(tr);
   });
+  tabela.appendChild(tbody);
 
   container.appendChild(tabela);
 }
+
 
 
 // SISTEMA DE AUTENTICAÇÃO - LOGIN
@@ -146,7 +154,7 @@ document.getElementById('button-login').addEventListener('click', async (e) => {
       localStorage.setItem('login', true);
 
       setTimeout(() => {
-        stepMaster(2)
+        stepMaster(1)
       }, 2000);
     }
 
@@ -155,16 +163,236 @@ document.getElementById('button-login').addEventListener('click', async (e) => {
   }
 });
 
-// ENVIAR MENSAGENS PARA WHATSAPP - COM OPERADORES DE [] E {}
-document.getElementById('meuBotao').addEventListener('click', () => {
+let arquivoSelecionado = null;
+
+document.getElementById('input-anexo').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    arquivoSelecionado = file;
+    console.log('Arquivo anexado:', file.name);
+  }
+});
+
+function arquivoParaBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]); // Remove prefixo base64
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('rapido').addEventListener('change', () => {
+  if (document.getElementById('rapido').checked) {
+    document.getElementById('digitando').checked = false;
+  }
+});
+document.getElementById('digitando').addEventListener('change', () => {
+  if (document.getElementById('digitando').checked) {
+    document.getElementById('rapido').checked = false;
+  }
+});
+
+let total = 0;
+let enviados = 0;
+let enviadosGrupo = 0;
+let lista = [];
+let listaGrupo = [];
+let pararEnvio = false;
+
+
+function pararMensagens() {
+  pararEnvio = true;
+  console.log("Envio pausado!")
+  closeMockup();
+  document.getElementById('footer-progress').style.display = 'none';
+  document.getElementById('mensagem-final').innerHTML = '';
+}
+
+// RETORNO DO BACK-END SOBRE SEND MENSAGEM!
+ipcRenderer.on('send-message', async () => {
+  // Se o usuário quiser parar o envio
+  if (pararEnvio) {
+    document.getElementById('mensagem-final').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none"><path d="M6.53572 7.95917L8.52857 9.85715L13.1786 5.42858M9.85714 2.76144L9.6862 2.58018C7.49673 0.258804 3.87567 0.53166 2.01784 3.15799C0.368917 5.48902 0.763823 8.78709 2.90982 10.6073L9.85714 16.5L16.8045 10.6073C18.9504 8.78709 19.3454 5.48902 17.6965 3.15799C15.8386 0.531649 12.2176 0.258804 10.0281 2.58018L9.85714 2.76144Z" stroke="#ff0000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Envio cancelado pelo usuário!`;
+    document.getElementById('footer-progress').style.display = 'flex';
+    return;
+  }
+
+  let delay = parseInt(document.getElementById('delay').value) || 0;
+  enviados++;
+
+  let porcentagem = Math.round((enviados / total) * 100);
+  document.getElementById('barra-progresso').style.width = porcentagem + '%';
+  document.getElementById('info-progresso').innerHTML = `Enviados: ${enviados} | Total: ${total}`;
+
+  if (enviados >= total) {
+    document.getElementById('footer-pause').style.display = 'none';
+    document.getElementById('mensagem-final').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none"><path d="M6.53572 7.95917L8.52857 9.85715L13.1786 5.42858M9.85714 2.76144L9.6862 2.58018C7.49673 0.258804 3.87567 0.53166 2.01784 3.15799C0.368917 5.48902 0.763823 8.78709 2.90982 10.6073L9.85714 16.5L16.8045 10.6073C18.9504 8.78709 19.3454 5.48902 17.6965 3.15799C15.8386 0.531649 12.2176 0.258804 10.0281 2.58018L9.85714 2.76144Z" stroke="#8629FE" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Todos os envios foram concluídos!`;
+    document.getElementById('footer-progress').style.display = 'flex';
+    return;
+  }
+
+  await sleep(delay); 
+  enviarProximo();
+});
+
+
+// RETORNO DO BACK-END SOBRE SEND MENSAGEM!
+ipcRenderer.on('send-message-grupo', async () => {
+  if (pararEnvio) {
+    document.getElementById('mensagem-final').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none"><path d="M6.53572 7.95917L8.52857 9.85715L13.1786 5.42858M9.85714 2.76144L9.6862 2.58018C7.49673 0.258804 3.87567 0.53166 2.01784 3.15799C0.368917 5.48902 0.763823 8.78709 2.90982 10.6073L9.85714 16.5L16.8045 10.6073C18.9504 8.78709 19.3454 5.48902 17.6965 3.15799C15.8386 0.531649 12.2176 0.258804 10.0281 2.58018L9.85714 2.76144Z" stroke="#ff0000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Envio cancelado pelo usuário!`;
+    document.getElementById('footer-progress').style.display = 'flex';
+    return;
+  }
+
+  let delay = parseInt(document.getElementById('delay').value) || 0;
+  enviadosGrupo++;
+
+  let porcentagem = Math.round((enviadosGrupo / total) * 100);
+  document.getElementById('barra-progresso').style.width = porcentagem + '%';
+  document.getElementById('info-progresso').innerHTML = `Enviados: ${enviadosGrupo} | Total: ${total}`;
+
+  if (enviadosGrupo >= total) {
+    document.getElementById('footer-pause').style.display = 'none';
+    document.getElementById('mensagem-final').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none"><path d="M6.53572 7.95917L8.52857 9.85715L13.1786 5.42858M9.85714 2.76144L9.6862 2.58018C7.49673 0.258804 3.87567 0.53166 2.01784 3.15799C0.368917 5.48902 0.763823 8.78709 2.90982 10.6073L9.85714 16.5L16.8045 10.6073C18.9504 8.78709 19.3454 5.48902 17.6965 3.15799C15.8386 0.531649 12.2176 0.258804 10.0281 2.58018L9.85714 2.76144Z" stroke="#8629FE" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Todos os envios foram concluídos!`;
+    document.getElementById('footer-progress').style.display = 'flex';
+    return;
+  }
+
+  await sleep(delay); 
+  enviarProximoGrupo();
+});
+
+let listaSelecionados = [];
+
+// document.getElementById('sendMessageGrupo').addEventListener('click', async () => {
+//   pararEnvio = false;
+  
+//   const checkboxes = document.querySelectorAll('#listaGrupos input[type="checkbox"]:checked');
+//   const gruposSelecionados = [];
+  
+//   checkboxes.forEach(cb => {
+//     gruposSelecionados.push({
+//       Nome: cb.name,
+//       id: cb.value
+//     });
+//   });
+  
+//   listaSelecionados.length = 0;
+//   listaSelecionados.push(...gruposSelecionados);
+
+//   const modeloMensagem = document.querySelector('#textareaGrupo').value;
+
+//   total = lista.length;
+//   enviarProximoGrupo(0, listaSelecionados);
+// });
+
+
+document.getElementById('sendMessageGrupo').addEventListener('click', async () => {
+  pararEnvio = false;
+
+  const checkboxes = document.querySelectorAll('#listaGrupos input[type="checkbox"]:checked');
+  const gruposSelecionados = [];
+
+  checkboxes.forEach(cb => {
+    gruposSelecionados.push({
+      Nome: cb.name,
+      id: cb.value
+    });
+  });
+
+  listaSelecionados.length = 0;
+  listaSelecionados.push(...gruposSelecionados);
+
+  const modeloMensagem = document.querySelector('#textareaGrupo').value;
+  const barra = document.querySelector('#barra-progresso');
+  document.getElementById('info-progresso').innerHTML = ``;
+  const container = document.querySelector('#progresso-container');
+  const mensagemFinal = document.querySelector('#mensagem-final');
+
+  barra.style.width = '0%';
+  container.style.display = 'block';
+  mensagemFinal.innerText = '';
+  document.querySelector('#footer-progress').style.display = 'none';
+  document.querySelector('#footer-pause').style.display = 'flex';
+  enableMockup('processo');
+
+  enviadosGrupo = 0;
+  listaGrupo = [];
+
+for (const grupo of gruposSelecionados) {
+  let mensagemPersonalizada = modeloMensagem;
+
+  mensagemPersonalizada = mensagemPersonalizada.replace(/\{\s*\[([^\[\]]+)\]\s*([+\-*/])\s*([^\}]+?)\s*\}/g, (_, variavel, operador, outroValor) => {
+    try {
+      const valor1 = Number(variavel.trim());
+      const valor2 = Number(outroValor.trim());
+      const resultado = Function(`"use strict"; return (${valor1} ${operador} ${valor2})`)();
+      return resultado;
+    } catch {
+      return `{Erro: {[${variavel}] ${operador} ${outroValor}}}`;
+    }
+  });
+
+  mensagemPersonalizada = mensagemPersonalizada.replace(/\{([^{}]+)\}/g, (_, expressao) => {
+    try {
+      return Function(`"use strict"; return (${expressao})`)();
+    } catch {
+      return `{Erro: ${expressao}}`;
+    }
+  });
+
+  const mensagemGrupo = {
+    grupoId: grupo.id,
+    grupoNome: grupo.Nome,
+    mensagem: mensagemPersonalizada,
+    digitando: 0,
+    anexo: arquivoSelecionado ? {
+      nome: arquivoSelecionado.name,
+      tipo: arquivoSelecionado.type,
+      conteudo: await arquivoParaBase64(arquivoSelecionado)
+    } : null
+  };
+
+  listaGrupo.push(mensagemGrupo);
+}
+
+
+  total = listaGrupo.length;
+  enviarProximoGrupo(); // ou: enviarProximoGrupo(enviados, lista);
+});
+
+function enviarProximoGrupo() {
+  if (enviadosGrupo < listaGrupo.length) {
+    const item = listaGrupo[enviadosGrupo];
+    console.log("Enviando para back-end:", item);
+    ipcRenderer.send('enviar-grupo', [item]);
+  }
+}
+
+document.getElementById('sendMessage').addEventListener('click', async () => {
+  pararEnvio = false;
   if (!dadosDaPlanilha || dadosDaPlanilha.length === 0) {
     alert('Por favor, selecione uma planilha primeiro!');
     return;
   }
 
+  let digito = document.getElementById('digitando').checked ? 1 : 0;
   const modeloMensagem = document.getElementById('textarea').value;
+  const barra = document.getElementById('barra-progresso');
+  const container = document.getElementById('progresso-container');
+  const mensagemFinal = document.getElementById('mensagem-final');
+  document.getElementById('info-progresso').innerHTML = ``;
 
-  const lista = dadosDaPlanilha.map(item => {
+  barra.style.width = '0%';
+  container.style.display = 'block';
+  mensagemFinal.innerText = '';
+  document.getElementById('footer-progress').style.display = 'none';
+  document.getElementById('footer-pause').style.display = 'flex';
+  enableMockup('processo');
+
+  enviados = 0;
+  lista = await Promise.all(dadosDaPlanilha.map(async item => {
     let mensagemFinal = modeloMensagem;
 
     Object.entries(item).forEach(([chave, valor]) => {
@@ -178,55 +406,42 @@ document.getElementById('meuBotao').addEventListener('click', () => {
         const valor2 = Number(outroValor.trim());
         const resultado = Function(`"use strict"; return (${valor1} ${operador} ${valor2})`)();
         return resultado;
-      } catch (e) {
+      } catch {
         return `{Erro: {[${variavel}] ${operador} ${outroValor}}}`;
       }
     });
 
     mensagemFinal = mensagemFinal.replace(/\{([^{}]+)\}/g, (_, expressao) => {
       try {
-        const resultado = Function(`"use strict"; return (${expressao})`)();
-        return resultado;
-      } catch (e) {
+        return Function(`"use strict"; return (${expressao})`)();
+      } catch {
         return `{Erro: ${expressao}}`;
       }
     });
 
     return {
       numero: String(item.Numero || item.numero || item.tefefone || item.Telefone || item.contato || item.Contato),
-      mensagem: mensagemFinal
+      mensagem: mensagemFinal,
+      digitando: digito,
+      anexo: arquivoSelecionado ? {
+        nome: arquivoSelecionado.name,
+        tipo: arquivoSelecionado.type,
+        conteudo: await arquivoParaBase64(arquivoSelecionado)
+      } : null
     };
-  });
+  }));
 
-  const barra = document.getElementById('barra-progresso');
-  const container = document.getElementById('progresso-container');
-  const mensagemFinal = document.getElementById('mensagem-final');
-  container.style.display = 'block';
-  barra.style.width = '0%';
-  mensagemFinal.innerText = '';
-
-  let total = lista.length;
-  let enviados = 0;
-
-  const enviarProximo = () => {
-    if (enviados >= total) {
-      mensagemFinal.innerText = '✅ Todos os envios foram concluídos!';
-      return;
-    }
-
-    const item = lista[enviados];
-    // ipcRenderer.send('enviar-lista', [item]);
-    console.log(JSON.stringify(item));
-
-    enviados++;
-    let porcentagem = Math.round((enviados / total) * 100);
-    barra.style.width = porcentagem + '%';
-
-    setTimeout(enviarProximo, 800);
-  };
-
+  total = lista.length;
   enviarProximo();
 });
+
+function enviarProximo() {
+  if (enviados < lista.length) {
+    const item = lista[enviados];
+    ipcRenderer.send('enviar-lista', [item]);
+  }
+}
+
 
 
 
@@ -266,15 +481,39 @@ ipcRenderer.on('dados-usuario', (event, dados) => {
   const numeroUser = dados.numero;
   const numeroSplit = numeroUser.split('@')[0].split(":")
   document.getElementById('numeroUsuario').innerText = `+${numeroSplit[0]}${numeroSplit[1]}`;
-  document.getElementById('fotoUsuario').src = dados.foto;
+  // document.getElementById('fotoUsuario').src = dados.foto;
+ document.getElementById('fotoUsuario').style.backgroundImage = `url(${dados.foto})`;
 
-  // const ul = document.getElementById('listaGrupos');
-  // ul.innerHTML = '';
-  // dados.grupos.forEach(grupo => {
-  //   const li = document.createElement('li');
-  //   li.innerText = `${grupo.nome} (${grupo.participantes} membros)`;
-  //   ul.appendChild(li);
-  // });
+ const ul = document.getElementById('listaGrupos');
+  ul.innerHTML = '';
+
+  console.log(JSON.stringify(dados.grupos))
+
+  dados.grupos.forEach(grupo => {
+    const li = document.createElement('li');
+
+    const label = document.createElement('label');
+    label.className = 'container';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = grupo.id;
+    checkbox.name = grupo.nome;
+
+    const checkmarkDiv = document.createElement('div');
+    checkmarkDiv.className = 'checkmark2';
+
+    const descricao = document.createElement('span');
+    descricao.innerText = `${grupo.nome} - (${grupo.participantes} membros)`;
+
+    label.appendChild(checkbox);
+    label.appendChild(checkmarkDiv);
+    label.appendChild(descricao);
+
+    li.appendChild(label);
+    ul.appendChild(li);
+  });
+
 
   document.getElementById('loading-homepage').style.display = "none";
   document.getElementById('onloading-homepage').style.display = "flex";
@@ -303,5 +542,127 @@ document.querySelectorAll("#linkProfile").addEventListener('click', (e) => {
   shell.openExternal('https://www.linkedin.com/in/luiseduardo-andrade/');
 })
 
-// document.getElementById('meuBotao').addEventListener('click', () => {
 
+function handlePage(page) {
+  const paginaPrivado = document.getElementById('privado');
+  const paginaGrupo = document.getElementById('grupo');
+  const paginaChip = document.getElementById('chip');
+  const paginaBase = document.getElementById('base');
+  const paginaChat = document.getElementById('chat');
+  const paginaPadrao = document.getElementById('padrao');
+
+  const buttonPrivado = document.querySelector('#button-privado .iconMenu');
+  const buttonGrupo = document.querySelector('#button-grupo .iconMenu');
+  const buttonChip = document.querySelector('#button-chip .iconMenu');
+  const buttonBase = document.querySelector('#button-base .iconMenu');
+  const buttonChat = document.querySelector('#button-chat .iconMenu');
+  const buttonPadrao = document.querySelector('#button-padrao .iconMenu');
+
+  const buttonAll = [
+    buttonPrivado,
+    buttonGrupo,
+    buttonChip,
+    buttonBase,
+    buttonChat,
+    buttonPadrao
+  ];
+
+
+  const todasAsPaginas = [
+    paginaPrivado,
+    paginaGrupo,
+    paginaChip,
+    paginaBase,
+    paginaChat,
+    paginaPadrao
+  ];
+
+  todasAsPaginas.forEach(pagina => {
+    pagina.style.display = 'none';
+  });
+
+  buttonAll.forEach(button => {
+    button.style.backgroundColor = "#2e313817";
+    button.classList.remove('ativo'); 
+  });
+
+  function ativarPagina(pagina, botao) {
+    pagina.style.display = 'flex';
+    botao.style.backgroundColor = "#8529fe25";
+    botao.classList.add('ativo'); 
+  }
+
+  switch (page) {
+    case 'privado':
+      ativarPagina(paginaPrivado, buttonPrivado);
+      break;
+    case 'grupo':
+      ativarPagina(paginaGrupo, buttonGrupo);
+      break;
+    case 'chip':
+      ativarPagina(paginaChip, buttonChip);
+      break;
+    case 'base':
+      ativarPagina(paginaBase, buttonBase);
+      break;
+    case 'padrao':
+      ativarPagina(paginaPadrao, buttonPadrao);
+      break;
+    case 'chat':
+      ativarPagina(paginaChat, buttonChat);
+      break;
+    default:
+      console.log("Página desconhecida:", page);
+      break;
+  }
+}
+
+
+
+
+function show() {
+  const titulo = document.getElementById('tooltip');
+  titulo.style.animation = 'enterLateral 0.4s forwards';
+}
+
+function hide() {
+  const titulo = document.getElementById('tooltip');
+  titulo.style.animation = 'leaveLateral 0.4s forwards';
+}
+
+
+
+function enableMockup(valor) {
+  switch (valor) {
+    case 'mensagem':
+      const infoMensagme = document.getElementById("info-mensagem")
+      document.getElementById("mockups").style.display = 'block'
+      infoMensagme.style.display = 'block'
+      infoMensagme.style.animation = 'enterTop 0.7s forwards';
+      break;
+    case 'processo':
+      document.getElementById("mockups").style.display = 'block';
+      document.getElementById("loading-message").style.display = 'flex';
+      document.getElementById("loading-message").style.animation = 'enterTop 0.7s forwards';
+      break;
+    default : 
+      console.log("Nenhuma case encontrada") 
+      break;
+  }
+}
+
+function closeMockup() {
+  const listMockup = ["mockups", "info-mensagem", "loading-message"]
+
+  listMockup.forEach(mockup => {
+    document.getElementById(mockup).style.display = 'none';
+  })
+
+}
+
+
+function handleLogoff() {
+  localStorage.clear();
+  stepMaster(0);
+  ipcRenderer.send('realizar-logout');
+}

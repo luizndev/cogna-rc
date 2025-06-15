@@ -1,28 +1,20 @@
 const { app, BrowserWindow, ipcMain, globalShortcut  } = require('electron');
 const path = require('path');
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  fetchLatestBaileysVersion,
-  DisconnectReason
-} = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const fs = require('fs');
-const qrcode = require('qrcode-terminal');
-require('dotenv').config();
+const { Buffer } = require('buffer');
 
-// 🔹 Referência global para o socket
+// MODULOS IMPORTADOS
+const { enviarMensagemComAnexo } = require('./components/sendMessageAnexo.js');
+const { enviarMensagemParaNumero } = require('./components/sendMessage.js');
+const { createWindow } = require('./components/createWindow.js');
+const { enviarMensagemParaNumeroGrupo } = require('./components/sendMessageGroup.js')
+const { enviarMensagemComAnexoGrupo } = require('./components/sendMessageGroupAnexo.js')
+
 let sock = null;
-
-// 🔹 Flag para controlar se o socket está conectado
 let isConnected = false;
 
-// 🔹 Função global para log
-function printInsert(valor) {
-  console.log("Printou:", valor);
-}
-
-// 🔹 Função para iniciar o bot e retornar a instância do socket
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
   const { version } = await fetchLatestBaileysVersion();
@@ -55,23 +47,20 @@ async function startBot() {
       mainWindow.webContents.send('verify-connect', isConnected);
       console.log('✅ Bot conectado!');
 
-      // Recupera informações do usuário logado
       const userJid = sock.user.id;
       const nome = sock.user.name;
 
-      // Pega a foto de perfil
       try {
         const fotoPerfil = await sock.profilePictureUrl(userJid, 'image');
         
-        // Pega todos os grupos
         const chats = await sock.groupFetchAllParticipating();
         const grupos = Object.values(chats).map(grupo => ({
           id: grupo.id,
           nome: grupo.subject,
+          participants: grupo.participants,
           participantes: grupo.participants.length
         }));
 
-        // Envia para o front-end
         mainWindow.webContents.send('dados-usuario', {
           nome,
           numero: userJid,
@@ -89,7 +78,6 @@ async function startBot() {
   return sock;
 }
 
-// Função que aguarda até o socket conectar
 function waitForConnection() {
   return new Promise((resolve) => {
     if (isConnected) return resolve();
@@ -99,68 +87,67 @@ function waitForConnection() {
   });
 }
 
-// Enviar mensagem para número com verificação se existe no WhatsApp
-async function enviarMensagemParaNumero(sock, numero, mensagem) {
-  try {
-    const jidCheck = await sock.onWhatsApp(numero + '@s.whatsapp.net');
-    
-    if (!jidCheck || jidCheck.length === 0 || !jidCheck[0]?.exists) {
-      console.log(`❌ Número ${numero} não existe no WhatsApp`);
-      return;
-    }
-
-    const jid = jidCheck[0].jid;
-
-    await sock.sendMessage(jid, { text: mensagem });
-    console.log(`✅ Mensagem enviada para ${numero}`);
-    
-  } catch (err) {
-    console.error(`❌ Erro ao enviar mensagem para ${numero}:`, err);
-  }
-}
-
-
 // Enviar mensagens para a lista
 async function enviarMensagens(sock, lista) {
   await waitForConnection();
 
   for (const item of lista) {
-    const numero = item.numero;
-    const mensagem = item.mensagem;
-
+    const { numero, mensagem, anexo, digitando } = item;
     console.log(`📨 Enviando para ${numero}...`);
-    await enviarMensagemParaNumero(sock, numero, mensagem);
+
+    if (anexo) {
+      await enviarMensagemComAnexo(sock, numero, mensagem, anexo, digitando);
+    } else {
+      await enviarMensagemParaNumero(sock, numero, mensagem, digitando);
+    }
   }
 
   console.log('✅ Todas as mensagens foram processadas.');
 }
 
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 1024,
-    height: 616,
-    resizable: false,
-    maximizable: false,
-    show: false,
-    webPreferences: {
-      contextIsolation: false,
-      nodeIntegration: true
-    },
-    icon: path.join(__dirname, 'interface', 'assets/favicon.png')
-  });
+// Enviar mensagens para a lista grupo
+async function enviarMensagensGrupo(sock, lista) {
+  await waitForConnection();
 
-  win.setMenu(null);
+  for (const item of lista) {
+    const { grupoId, grupoNome, mensagem, anexo, digitando } = item;
+    console.log(`📨 Enviando para ${grupoNome}...`);
 
-  win.once('ready-to-show', () => {
-    win.show();
-  });
-  win.loadFile('interface/index.html');
+    if (anexo) {
+      await enviarMensagemComAnexoGrupo(sock, grupoId, mensagem, anexo, digitando);
+    } else {
+      await enviarMensagemParaNumeroGrupo(sock, grupoId, mensagem, digitando);
+    }
+  }
+
+  console.log('✅ Todas as mensagens foram processadas.');
 }
+// function createWindow() {
+//   const win = new BrowserWindow({
+//     width: 1024,
+//     height: 616,
+//     resizable: false,
+//     maximizable: false,
+//     show: false,
+//     webPreferences: {
+//       contextIsolation: false,
+//       nodeIntegration: true
+//     },
+//     icon: path.join(__dirname, 'interface', 'assets/favicon.png')
+//   });
+
+//   win.setMenu(null);
+
+//   win.once('ready-to-show', () => {
+//     win.show();
+//   });
+//   win.loadFile('interface/index.html');
+// }
 
 app.whenReady().then(async () => {
   createWindow();
 
-  globalShortcut.register('Control+Shift+I', () => {
+  globalShortcut.register('Control+Shift+P', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
       focusedWindow.webContents.openDevTools();
@@ -175,87 +162,23 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.on('enviar-lista', async (event, lista) => {
-  printInsert(JSON.stringify(lista));
-enviarMensagens(sock, lista);
+  // printInsert(JSON.stringify(lista));
+  enviarMensagens(sock, lista);
 });
 
-// Função opcional para iniciar cobrança automática (ajustada)
-async function iniciarCobranca(sock) {
-    let usuarios;
-
-    try {
-        usuarios = JSON.parse(fs.readFileSync('./membros.json', 'utf8'));
-    } catch (e) {
-        console.error('Erro lendo membros.json:', e);
-        return;
-    }
-
-    const agora = new Date();
-    console.log('iniciarCobranca - Usuários carregados:', Object.keys(usuarios).length);
-
-    for (const numero in usuarios) {
-        const user = usuarios[numero];
-
-        // Data para contar o prazo da cobrança
-        const dataInicio = user.inicio_cobranca ? new Date(user.inicio_cobranca) : new Date(user.vencimento);
-        const diferencaHoras = (agora - dataInicio) / 1000 / 60 / 60; // em horas
-
-        console.log(`Checando usuário ${numero} - status: ${user.status} - horas desde início: ${diferencaHoras.toFixed(2)}`);
-
-        if (user.status === 'pendente' && diferencaHoras >= 0 && diferencaHoras <= 24) {
-            try {
-                const cleanNumber = numero.replace(/\D/g, '');
-                const jid = cleanNumber + '@s.whatsapp.net';
-
-                if (!jid) {
-                    console.log(`❌ Usuário ${numero} não tem jid salvo (não iniciou conversa)`);
-                    continue;
-                }
+ipcMain.on('enviar-grupo', (event, dados) => {
+  console.log('Mensagem recebida no main:', dados);
+  enviarMensagensGrupo(sock, dados)
+  // Aqui você envia para o back-end via HTTP ou manipula como quiser
+});
 
 
-                const texto = `Olá Shinobi/Kunoichi, tudo bem com você?\n\nDeseja renovar o apoio do canal?\n\nSe sim, Digite "Play" para receber o QR code do Pix e renovar seu apoio. Assim, seu apoio será renovado por mais 30 dias.\n\nCaso não deseje renovar, ignore essa mensagem.`;
-
-               await sock.sendMessage(jid, { 
-                    text: texto 
-                });
-
-
-                console.log(`✅ Mensagem de cobrança enviada para ${numero}`);
-            } catch (err) {
-                console.error(`❌ Erro ao enviar mensagem para ${numero}:`, err);
-            }
-        } else {
-            console.log(`⚠️ Usuário ${numero} não está pendente ou está fora do prazo de 24h.`);
-        }
-    }
-}
-
-
-// function verificarVencimentos() {
-//     const hoje = new Date();
-//     const hojeStr = hoje.toISOString().split('T')[0];
-
-//     for (const numero in membros) {
-//         const membro = membros[numero];
-//         if (membro.vencimento <= hojeStr && membro.status === 'ok') {
-//             console.log(`Vencimento expirado ou hoje para ${numero}`);
-
-//             // Atualiza status para pendente
-//             membro.status = 'pendente';
-
-//             // Aqui você pode remover do grupo ou enviar aviso
-//             // Exemplo (se quiser remover):
-//             // await removerDoGrupo(numero, membro.grupo);
-//         }
-//     }
-
-//     salvarMembros();
-// }
-
-// // Rodar a cada 30 minutos
-// setInterval(verificarVencimentos, 30 * 60 * 1000);
-
-
-
-
-
+// FAZER LOGOUT, DESTUIR SESSÃO E TUDO MAIS!
+ipcMain.on('realizar-logout', () => {
+  try {
+    fs.rmdirSync('./auth', { recursive: true });
+    console.log('Pasta removida com sucesso!');
+  } catch (err) {
+    console.error('Erro ao remover a pasta:', err);
+  }
+});

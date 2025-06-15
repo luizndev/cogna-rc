@@ -1,23 +1,42 @@
 {
-  "name": "bot",
+  "name": "CognaRC",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "electron index.js",
+    "build": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.cogna.rc",
+    "productName": "Cogna RC",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Bot Cogna RC",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.18",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
-    "electron": "^36.4.0",
     "node-fetch": "^3.3.2",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-reload": "^2.0.0-alpha.1"
   }
 }
