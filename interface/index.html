@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
+
   <title>Robô de Comunicação - Cogna Educação</title>
   <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
@@ -123,6 +125,16 @@
                     <h2>MENSAGEM EM GRUPO</h2>
                   </div>
                 </div>
+                <div class="button" id="button-base" onclick="handlePage('base')">
+                  <div class="iconMenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="11" viewBox="0 0 13 11" fill="none">
+                      <path d="M11.7 1.375H6.5L5.2 0H1.3C0.585 0 0.00649999 0.61875 0.00649999 1.375L0 9.625C0 10.3813 0.585 11 1.3 11H11.7C12.415 11 13 10.3813 13 9.625V2.75C13 1.99375 12.415 1.375 11.7 1.375ZM11.7 9.625H1.3V2.75H11.7V9.625ZM6.4935 3.4375L5.577 4.40687L6.604 5.5H3.9V6.875H6.604L5.5705 7.96813L6.4935 8.9375L9.1 6.19438L6.4935 3.4375Z" fill="#2E3138"/>
+                    </svg>
+                  </div>
+                  <div class="button-info">
+                    <h2>EXTRAIR BASE</h2>
+                  </div>
+                </div>
                 <div class="button" id="button-chip" onclick="handlePage('chip')" style="pointer-events: none;opacity: 50%; filter: saturate(0%);">
                   <div class="iconMenu">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -133,17 +145,7 @@
                     <h2>MATURAR CHIP</h2>
                   </div>
                 </div>
-                <div class="button" id="button-base" onclick="handlePage('base')">
-                  <div class="iconMenu">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="11" viewBox="0 0 13 11" fill="none">
-                     <path d="M11.7 1.375H6.5L5.2 0H1.3C0.585 0 0.00649999 0.61875 0.00649999 1.375L0 9.625C0 10.3813 0.585 11 1.3 11H11.7C12.415 11 13 10.3813 13 9.625V2.75C13 1.99375 12.415 1.375 11.7 1.375ZM11.7 9.625H1.3V2.75H11.7V9.625ZM6.4935 3.4375L5.577 4.40687L6.604 5.5H3.9V6.875H6.604L5.5705 7.96813L6.4935 8.9375L9.1 6.19438L6.4935 3.4375Z" fill="#2E3138"/>
-                    </svg>
-                  </div>
-                  <div class="button-info">
-                    <h2>EXTRAIR BASE</h2>
-                  </div>
-                </div>
-                <div class="button" id="button-padrao" onclick="handlePage('padrao')" style="pointer-events: none;opacity: 50%; filter: saturate(0%);">
+                <!-- <div class="button" id="button-padrao" onclick="handlePage('padrao')" style="pointer-events: none;opacity: 50%; filter: saturate(0%);">
                   <div class="iconMenu">
                   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="13" viewBox="0 0 15 13" fill="none">
                     <path d="M1.36364 1.80556V0.717456C1.36364 0.321216 1.67408 0 2.03986 0H14.3238C14.6973 0 15 0.321353 15 0.717456V12.2825C15 12.6788 14.6896 13 14.3238 13H2.03986C1.6664 13 1.36364 12.6787 1.36364 12.2825V11.5556H13.6364V3.10556L8.18182 8.30556L1.36364 1.80556ZM0 5.05556H3.40909V6.5H0V5.05556ZM0 8.66667H5.45455V10.1111H0V8.66667Z" fill="#2E3138"/>
@@ -152,8 +154,8 @@
                   <div class="button-info">
                     <h2>RESPOSTA PADRÃO</h2>
                   </div>
-                </div>
-                <div class="button" id="button-chat" onclick="handlePage('chat')" style="pointer-events: none;opacity: 50%; filter: saturate(0%);">
+                </div> -->
+                <!-- <div class="button" id="button-chat" onclick="handlePage('chat')" style="pointer-events: none;opacity: 50%; filter: saturate(0%);">
                   <div class="iconMenu">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <path d="M0.7 5.11255H1.4V9.23755H0.7C0.608044 9.23766 0.516969 9.21995 0.431992 9.18544C0.347014 9.15093 0.269803 9.10029 0.20478 9.03643C0.139757 8.97256 0.0881992 8.89673 0.05306 8.81327C0.0179208 8.72981 -0.00010987 8.64036 5.03679e-07 8.55005V5.80005C-0.00010987 5.70973 0.0179208 5.62029 0.05306 5.53683C0.0881992 5.45337 0.139757 5.37753 0.20478 5.31367C0.269803 5.24981 0.347014 5.19917 0.431992 5.16466C0.516969 5.13015 0.608044 5.11244 0.7 5.11255ZM11.9 4.0813V9.92505C11.8996 10.2896 11.752 10.6391 11.4895 10.8969C11.2271 11.1547 10.8712 11.2997 10.5 11.3H3.5C3.12881 11.2997 2.77293 11.1547 2.51046 10.8969C2.24798 10.6391 2.10037 10.2896 2.1 9.92505V4.0813C2.09993 3.85557 2.14514 3.63204 2.23306 3.42347C2.32098 3.21491 2.44988 3.02541 2.6124 2.8658C2.77491 2.70618 2.96786 2.57958 3.18022 2.49323C3.39257 2.40688 3.62017 2.36248 3.85 2.36255H6.3V0.987549C6.3 0.805212 6.37375 0.630344 6.50503 0.501413C6.6363 0.372482 6.81435 0.300049 7 0.300049C7.18565 0.300049 7.3637 0.372482 7.49497 0.501413C7.62625 0.630344 7.7 0.805212 7.7 0.987549V2.36255H10.15C10.3798 2.36248 10.6074 2.40688 10.8198 2.49323C11.0321 2.57958 11.2251 2.70618 11.3876 2.8658C11.5501 3.02541 11.679 3.21491 11.7669 3.42347C11.8549 3.63204 11.9001 3.85557 11.9 4.0813ZM5.775 5.80005C5.775 5.63008 5.72368 5.46393 5.62754 5.32261C5.53139 5.18128 5.39473 5.07113 5.23485 5.00609C5.07496 4.94105 4.89903 4.92403 4.7293 4.95719C4.55956 4.99035 4.40365 5.07219 4.28128 5.19238C4.15891 5.31256 4.07558 5.46569 4.04181 5.63239C4.00805 5.7991 4.02538 5.97189 4.09161 6.12892C4.15783 6.28595 4.26998 6.42016 4.41388 6.51459C4.55777 6.60902 4.72694 6.65942 4.9 6.65942C5.01491 6.65943 5.12869 6.63721 5.23486 6.59403C5.34102 6.55084 5.43748 6.48754 5.51874 6.40774C5.59999 6.32794 5.66444 6.2332 5.70841 6.12893C5.75238 6.02466 5.77501 5.91291 5.775 5.80005ZM5.6 8.55005H4.2V9.23755H5.6V8.55005ZM7.7 8.55005H6.3V9.23755H7.7V8.55005ZM9.975 5.80005C9.975 5.63008 9.92368 5.46393 9.82754 5.32261C9.73139 5.18128 9.59473 5.07113 9.43485 5.00609C9.27496 4.94105 9.09903 4.92403 8.9293 4.95719C8.75956 4.99035 8.60365 5.07219 8.48128 5.19238C8.35891 5.31256 8.27557 5.46569 8.24181 5.63239C8.20805 5.7991 8.22538 5.97189 8.29161 6.12892C8.35783 6.28595 8.46998 6.42016 8.61388 6.51459C8.75777 6.60902 8.92694 6.65942 9.1 6.65942C9.21491 6.65943 9.32869 6.63721 9.43486 6.59403C9.54102 6.55084 9.63748 6.48754 9.71874 6.40774C9.79999 6.32794 9.86444 6.2332 9.90841 6.12893C9.95238 6.02466 9.97501 5.91291 9.975 5.80005ZM9.8 8.55005H8.4V9.23755H9.8V8.55005ZM14 5.80005V8.55005C14.0001 8.64036 13.9821 8.72981 13.9469 8.81327C13.9118 8.89673 13.8602 8.97256 13.7952 9.03643C13.7302 9.10029 13.653 9.15093 13.568 9.18544C13.483 9.21995 13.392 9.23766 13.3 9.23755H12.6V5.11255H13.3C13.392 5.11244 13.483 5.13015 13.568 5.16466C13.653 5.19917 13.7302 5.24981 13.7952 5.31367C13.8602 5.37753 13.9118 5.45337 13.9469 5.53683C13.9821 5.62029 14.0001 5.70973 14 5.80005Z" fill="#2E3138"/>
@@ -162,7 +164,7 @@
                   <div class="button-info">
                     <h2>CHAT BOT - COM IA</h2>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
 
@@ -258,9 +260,25 @@
                 </button>
               </div>
             </div>
-            <div class="chip" id="chip" style="display: none;"><h1>chip</h1></div>
-            <div class="base" id="base" style="display: none;"><h1>base</h1></div>
-            <div class="padrao" id="padrao" style="display: none;"><h1>padrao</h1></div>
+            <div class="chip" id="chip" style="display: none;">
+              <h1>chip</h1>
+            </div>
+            <div class="base" id="base" style="display: none;">
+              <div id="extrair-base">
+                <div class="form-floating">
+                  <label for="extrairBase">Extrair base de números:</label>
+                  <select class="form-select" name="extrairBase" id="extrairBase">
+                    <option value="">Selecione um grupo</option>
+                  </select>
+                </div>
+              <ul id="listaNumeros">
+                <span id="nenhuma">Selecione um grupo.</span>
+              </ul>
+              <button class="btn-cogna" id="save-base" onclick="handleExport()">Salvar Base</button>
+            </div>
+            </div>
+            <div class="padrao" id="padrao" style="display: none;">
+            </div>
             <div class="chat" id="chat" style="display: none;"><h1>chat</h1></div>
           </div>
         </div>
@@ -336,5 +354,6 @@
   </div>
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 <script src="javascript.js"></script>
 </html>

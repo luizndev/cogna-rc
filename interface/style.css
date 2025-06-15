@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
 
+
 :root{
   --cor: #8629FE;
   --cor-cinza: #2E3138;
@@ -255,6 +256,22 @@ th, td {
   background-color: var(--cor);
   border-radius: 5px;
   padding: 18px 7px;
+  border: none;
+  outline: none;
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.btn-cogna{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  color: white;
+  background-color: var(--cor);
+  border-radius: 5px;
+  padding: 10px 14px;
   border: none;
   outline: none;
   font-weight: 500;
@@ -767,6 +784,10 @@ input::-webkit-inner-spin-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  & h1{
+    font-weight: 500;
+  }
 }
 
 
@@ -1088,4 +1109,67 @@ input::-webkit-inner-spin-button {
   border: solid #ffffff;
   border-width: 0 0.15em 0.15em 0;
   transition: all 500ms ease-in-out;
+}
+
+
+#listaNumeros {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: start;
+  gap: 10px;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 200px;
+  overflow-x: auto;
+ 
+}
+
+#listaNumeros li {
+  width: fit-content;
+  list-style: none;
+  background-color: #eee;
+  padding: 5px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: var(--cor);
+  font-size: 11px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+
+#extrair-base{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+.form-floating{
+  display: flex;
+  flex-direction: column;
+  background-color: transparent !important;
+
+  & label{
+    font-size: 13px;
+    color: #2e31386e;
+  }
+
+  & select{
+    margin-top: 8px;
+    background: #cacaca27;
+    border-radius: 5px;
+    border: none;
+    font-size: 12px;
+    outline: none;
+    padding: 8px 12px;
+  }
+}
+
+#save-base{
+  cursor: pointer;
 }

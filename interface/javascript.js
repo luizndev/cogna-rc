@@ -265,29 +265,6 @@ ipcRenderer.on('send-message-grupo', async () => {
 
 let listaSelecionados = [];
 
-// document.getElementById('sendMessageGrupo').addEventListener('click', async () => {
-//   pararEnvio = false;
-  
-//   const checkboxes = document.querySelectorAll('#listaGrupos input[type="checkbox"]:checked');
-//   const gruposSelecionados = [];
-  
-//   checkboxes.forEach(cb => {
-//     gruposSelecionados.push({
-//       Nome: cb.name,
-//       id: cb.value
-//     });
-//   });
-  
-//   listaSelecionados.length = 0;
-//   listaSelecionados.push(...gruposSelecionados);
-
-//   const modeloMensagem = document.querySelector('#textareaGrupo').value;
-
-//   total = lista.length;
-//   enviarProximoGrupo(0, listaSelecionados);
-// });
-
-
 document.getElementById('sendMessageGrupo').addEventListener('click', async () => {
   pararEnvio = false;
 
@@ -442,9 +419,6 @@ function enviarProximo() {
   }
 }
 
-
-
-
 ipcRenderer.on('qr-code', (event, qrData) => {
   const canvas = document.getElementById('qrCanvas');
 
@@ -486,8 +460,8 @@ ipcRenderer.on('dados-usuario', (event, dados) => {
 
  const ul = document.getElementById('listaGrupos');
   ul.innerHTML = '';
-
-  console.log(JSON.stringify(dados.grupos))
+  enableGrupos(dados.grupos)
+  // console.log(JSON.stringify(dados.grupos))
 
   dados.grupos.forEach(grupo => {
     const li = document.createElement('li');
@@ -537,7 +511,7 @@ function formatarNumeroBrasil(numero) {
 }
 
 
-document.querySelectorAll("#linkProfile").addEventListener('click', (e) => {
+document.querySelector("#linkProfile").addEventListener('click', (e) => {
   e.preventDefault();
   shell.openExternal('https://www.linkedin.com/in/luiseduardo-andrade/');
 })
@@ -562,9 +536,9 @@ function handlePage(page) {
     buttonPrivado,
     buttonGrupo,
     buttonChip,
-    buttonBase,
-    buttonChat,
-    buttonPadrao
+    buttonBase
+    // buttonChat,
+    // buttonPadrao
   ];
 
 
@@ -665,4 +639,75 @@ function handleLogoff() {
   localStorage.clear();
   stepMaster(0);
   ipcRenderer.send('realizar-logout');
+}
+
+
+var listNumber = [];
+
+// MOSTRAR OS GRUPOS DA TELA!
+function enableGrupos(grupos) {
+  const select = document.getElementById('extrairBase');
+  const listaNumeros = document.getElementById('listaNumeros');
+
+  grupos.forEach(grupo => {
+    const option = document.createElement('option');
+    option.value = grupo.id;
+    option.textContent = `${grupo.nome} (${grupo.participantes} membros)`;
+    select.appendChild(option);
+  });
+
+  select.addEventListener('change', () => {
+    const grupoSelecionado = grupos.find(grupo => grupo.id === select.value);
+    listaNumeros.innerHTML = '';
+    listNumber = []; 
+
+    if (grupoSelecionado) {
+      grupoSelecionado.participants.forEach(p => {
+        const li = document.createElement('li');
+        const numero = p.id.replace('@s.whatsapp.net', '');
+        li.textContent = numero;
+        listNumber.push(numero); 
+        listaNumeros.appendChild(li);
+      });
+    }
+
+    console.log('Números salvos:', listNumber);
+  });
+}
+
+function handleExport(){
+  if(listNumber.length > 0){
+    ExportExcel(listNumber)
+  }
+}
+
+
+async function ExportExcel(list) {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Base');
+
+  // cabeçalho
+  worksheet.addRow(['Numero']);
+
+  list.forEach(numero => {
+    worksheet.addRow([numero]);
+  });
+
+  const data = new Date();
+
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const ano = data.getFullYear();
+  const hora = String(data.getHours()).padStart(2, '0');
+  const minutos = String(data.getMinutes()).padStart(2, '0');
+
+  const nomeArquivo = `${dia}-${mes}-${ano} - ${hora}h${minutos} - Base de Numeros.xlsx`;
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = nomeArquivo;
+  link.click();
 }

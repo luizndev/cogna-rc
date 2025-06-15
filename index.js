@@ -14,6 +14,7 @@ const { enviarMensagemComAnexoGrupo } = require('./components/sendMessageGroupAn
 
 let sock = null;
 let isConnected = false;
+let qrCode = null;
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
