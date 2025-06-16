@@ -16,7 +16,12 @@ let sock = null;
 let isConnected = false;
 let qrCode = null;
 
+let isConnecting = false;
+
 async function startBot() {
+  if (isConnecting) return;
+  isConnecting = true;
+
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
   const { version } = await fetchLatestBaileysVersion();
 
@@ -25,25 +30,27 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
-    // if (qr) qrcode.generate(qr, { small: true });
     if (qr) {
       console.log("🔳 QR Code recebido. Escaneie para conectar:");
       BrowserWindow.getAllWindows()[0].webContents.send('qr-code', qr);
-    };
+    }
 
     if (connection === 'close') {
       isConnected = false;
+      isConnecting = false;
 
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
       console.log('🔄 Conexão fechada:', lastDisconnect?.error?.message, 'Reconnecting?', shouldReconnect);
 
       if (shouldReconnect) {
-        await startBot();
+        setTimeout(() => startBot(), 2000); // pequena pausa antes de tentar de novo
       }
     }
 
     if (connection === 'open') {
       isConnected = true;
+      isConnecting = false;
+
       const mainWindow = BrowserWindow.getAllWindows()[0];
       mainWindow.webContents.send('verify-connect', isConnected);
       console.log('✅ Bot conectado!');
@@ -53,7 +60,7 @@ async function startBot() {
 
       try {
         const fotoPerfil = await sock.profilePictureUrl(userJid, 'image');
-        
+
         const chats = await sock.groupFetchAllParticipating();
         const grupos = Object.values(chats).map(grupo => ({
           id: grupo.id,
@@ -73,11 +80,11 @@ async function startBot() {
         console.error('Erro ao buscar dados do perfil:', err);
       }
     }
-
   });
 
   return sock;
 }
+
 
 function waitForConnection() {
   return new Promise((resolve) => {
@@ -146,16 +153,16 @@ async function enviarMensagensGrupo(sock, lista) {
 // }
 
 app.whenReady().then(async () => {
-  createWindow();
-
+  
   globalShortcut.register('Control+Shift+P', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
       focusedWindow.webContents.openDevTools();
     }
   });
-
+  
   await startBot();
+  createWindow();
 });
 
 app.on('window-all-closed', () => {
